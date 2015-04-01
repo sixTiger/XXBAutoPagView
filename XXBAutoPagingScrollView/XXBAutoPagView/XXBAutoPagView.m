@@ -49,7 +49,14 @@
 }
 - (void)setupAutoPagView
 {
-    self.backgroundColor = [UIColor yellowColor];
+    self.clipsToBounds = YES;
+}
+- (void)layoutSubviews
+{
+    [super layoutSubviews];
+    [self.autoScrollView removeFromSuperview];
+    self.autoScrollView = nil;
+    [self reloadData];
 }
 - (void)setupGesture
 {
@@ -62,15 +69,31 @@
     [tapGesture addTarget:self action:@selector(tap:)];
     [self addGestureRecognizer:tapGesture];
     
-    UISwipeGestureRecognizer *leftSwip = [[UISwipeGestureRecognizer alloc] init];
-    leftSwip.direction = UISwipeGestureRecognizerDirectionLeft;
-    [leftSwip addTarget:self action:@selector(leftSwip:)];
-    [self addGestureRecognizer:leftSwip];
-
-    UISwipeGestureRecognizer *rightSwip = [[UISwipeGestureRecognizer alloc] init];
-    rightSwip.direction = UISwipeGestureRecognizerDirectionRight;
-    [rightSwip addTarget:self action:@selector(rightSwip:)];
-    [self addGestureRecognizer:rightSwip];
+    if(self.verticalScroll)
+    {
+        UISwipeGestureRecognizer *downSwip = [[UISwipeGestureRecognizer alloc] init];
+        downSwip.direction = UISwipeGestureRecognizerDirectionDown;
+        [downSwip addTarget:self action:@selector(downSwip:)];
+        [self addGestureRecognizer:downSwip];
+        
+        UISwipeGestureRecognizer *upSwip = [[UISwipeGestureRecognizer alloc] init];
+        upSwip.direction = UISwipeGestureRecognizerDirectionUp;
+        [upSwip addTarget:self action:@selector(upSwip:)];
+        [self addGestureRecognizer:upSwip];
+    }
+    else
+    {
+        UISwipeGestureRecognizer *leftSwip = [[UISwipeGestureRecognizer alloc] init];
+        leftSwip.direction = UISwipeGestureRecognizerDirectionLeft;
+        [leftSwip addTarget:self action:@selector(leftSwip:)];
+        [self addGestureRecognizer:leftSwip];
+        
+        UISwipeGestureRecognizer *rightSwip = [[UISwipeGestureRecognizer alloc] init];
+        rightSwip.direction = UISwipeGestureRecognizerDirectionRight;
+        [rightSwip addTarget:self action:@selector(rightSwip:)];
+        [self addGestureRecognizer:rightSwip];
+        
+    }
 }
 - (void)willMoveToSuperview:(UIView *)newSuperview
 {
@@ -89,22 +112,41 @@
     [self.reusableCellDict removeAllObjects];
     // cell的总数
     NSInteger numberOfCells = [self.dataSource numberOfCellInAutoPagView:self];
-    // cell的宽度
-    CGFloat cellX;
-    CGFloat cellY = [self marginForType:XXBAutoPagViewMarginTypeRow] * 0.5;
-    CGFloat cellW = [self cellWidth];
-    CGFloat cellH = [self cellHeight];
-    // 计算所有cell的frame
-    CGFloat columnMargin =[self marginForType:XXBAutoPagViewMarginTypeColumn];
-    for (int i = 0; i<numberOfCells; i++)
+    if (self.verticalScroll)
     {
-        cellX = i * (cellW + columnMargin)+ columnMargin * 0.5;
-        // 添加frame到数组中
-        CGRect cellFrame = CGRectMake(cellX, cellY, cellW, cellH);
-        [self.cellFrames addObject:[NSValue valueWithCGRect:cellFrame]];
+        CGFloat cellX = [self marginForType:XXBAutoPagViewMarginTypeColumn] * 0.5;
+        CGFloat cellY;
+        CGFloat cellW = [self cellWidth];
+        CGFloat cellH = [self cellHeight];
+        // 计算所有cell的frame
+        CGFloat rowMargin =[self marginForType:XXBAutoPagViewMarginTypeRow];
+        for (int i = 0; i<numberOfCells; i++)
+        {
+            cellY = i * (cellH + rowMargin)+ rowMargin * 0.5;
+            // 添加frame到数组中
+            CGRect cellFrame = CGRectMake(cellX, cellY, cellW, cellH);
+            [self.cellFrames addObject:[NSValue valueWithCGRect:cellFrame]];
+        }
+        
+        self.autoScrollView.contentSize = CGSizeMake(cellW,numberOfCells * (cellH + rowMargin));
     }
-    self.autoScrollView.backgroundColor = [UIColor redColor];
-    self.autoScrollView.contentSize = CGSizeMake(numberOfCells * (cellW + columnMargin), cellH);
+    else
+    {
+        CGFloat cellX;
+        CGFloat cellY = [self marginForType:XXBAutoPagViewMarginTypeRow] * 0.5;
+        CGFloat cellW = [self cellWidth];
+        CGFloat cellH = [self cellHeight];
+        // 计算所有cell的frame
+        CGFloat columnMargin =[self marginForType:XXBAutoPagViewMarginTypeColumn];
+        for (int i = 0; i<numberOfCells; i++)
+        {
+            cellX = i * (cellW + columnMargin)+ columnMargin * 0.5;
+            // 添加frame到数组中
+            CGRect cellFrame = CGRectMake(cellX, cellY, cellW, cellH);
+            [self.cellFrames addObject:[NSValue valueWithCGRect:cellFrame]];
+        }
+        self.autoScrollView.contentSize = CGSizeMake(numberOfCells * (cellW + columnMargin), cellH);
+    }
     [self scrollViewDidScroll:self.autoScrollView];
 }
 - (CGFloat)cellWidth
@@ -182,9 +224,21 @@
  */
 - (BOOL)isInScreen:(CGRect)frame
 {
-    if (CGRectGetMaxX(frame) > self.autoScrollView.contentOffset.x - self.autoScrollView.frame.origin.x && CGRectGetMinX(frame) < self.autoScrollView.contentOffset.x + self.autoScrollView.frame.size.width + self.bounds.size.width - CGRectGetMaxX(self.autoScrollView.frame))
+    NSLog(@"%@",@(self.autoScrollView.subviews.count));
+    if (self.verticalScroll)
     {
-        return YES;
+        if (CGRectGetMaxY(frame) > self.autoScrollView.contentOffset.y - self.autoScrollView.frame.origin.y && CGRectGetMinY(frame) < self.autoScrollView.contentOffset.y + self.autoScrollView.frame.size.height + self.bounds.size.height - CGRectGetMaxY(self.autoScrollView.frame))
+        {
+            return YES;
+        }
+        
+    }
+    else
+    {
+        if (CGRectGetMaxX(frame) > self.autoScrollView.contentOffset.x - self.autoScrollView.frame.origin.x && CGRectGetMinX(frame) < self.autoScrollView.contentOffset.x + self.autoScrollView.frame.size.width + self.bounds.size.width - CGRectGetMaxX(self.autoScrollView.frame))
+        {
+            return YES;
+        }
     }
     return NO;
 }
@@ -240,6 +294,8 @@
 - (void)setDataSource:(id<XXBAutoPagViewDataSource>)dataSource
 {
     _dataSource = dataSource;
+    [self.autoScrollView removeFromSuperview];
+    self.autoScrollView = nil;
     [self reloadData];
 }
 /**
@@ -272,9 +328,9 @@
     else
     {
         if (type == XXBAutoPagViewMarginTypeRow || type == XXBAutoPagViewMarginTypeColumn) {
-            return XXBViewMargin;
+            return XXBCellMargin;
         }
-        return XXBCellMargin;
+        return XXBViewMargin;
     }
 }
 - (void)setPagingEnabled:(BOOL)pagingEnabled
@@ -292,22 +348,54 @@
     _showsVerticalScrollIndicator = showsVerticalScrollIndicator;
     self.autoScrollView.showsVerticalScrollIndicator = showsVerticalScrollIndicator;
 }
+- (void)setVerticalScroll:(BOOL)verticalScroll
+{
+    if (_verticalScroll == verticalScroll )
+        return;
+    _verticalScroll = verticalScroll;
+    [self setupGesture];
+    [self reloadData];
+}
 - (void)nextPage
 {
-    if (self.autoScrollView.contentOffset.x + self.autoScrollView.bounds.size.width < self.autoScrollView.contentSize.width)
+    if (self.verticalScroll)
     {
-        self.userInteractionEnabled = NO;
-        [self performSelector:@selector(animationControl) withObject:nil afterDelay:0.25];
-        [self.autoScrollView setContentOffset:CGPointMake(self.autoScrollView.contentOffset.x + self.autoScrollView.bounds.size.width, self.autoScrollView.contentOffset.y) animated:YES];
+        if (self.autoScrollView.contentOffset.y + self.autoScrollView.bounds.size.height < self.autoScrollView.contentSize.height)
+        {
+            self.userInteractionEnabled = NO;
+            [self performSelector:@selector(animationControl) withObject:nil afterDelay:0.25];
+            [self.autoScrollView setContentOffset:CGPointMake(self.autoScrollView.contentOffset.x,self.autoScrollView.contentOffset.y + self.autoScrollView.bounds.size.height) animated:YES];
+        }
+    }
+    else
+    {
+        if (self.autoScrollView.contentOffset.x + self.autoScrollView.bounds.size.width < self.autoScrollView.contentSize.width)
+        {
+            self.userInteractionEnabled = NO;
+            [self performSelector:@selector(animationControl) withObject:nil afterDelay:0.25];
+            [self.autoScrollView setContentOffset:CGPointMake(self.autoScrollView.contentOffset.x + self.autoScrollView.bounds.size.width, self.autoScrollView.contentOffset.y) animated:YES];
+        }
     }
 }
 - (void)privatePage
 {
-    if (self.autoScrollView.contentOffset.x > 0)
+    if (self.verticalScroll)
     {
-        self.userInteractionEnabled = NO;
-        [self performSelector:@selector(animationControl) withObject:nil afterDelay:0.25];
-        [self.autoScrollView setContentOffset:CGPointMake(self.autoScrollView.contentOffset.x - self.autoScrollView.bounds.size.width, self.autoScrollView.contentOffset.y) animated:YES];
+        if (self.autoScrollView.contentOffset.y > 0)
+        {
+            self.userInteractionEnabled = NO;
+            [self performSelector:@selector(animationControl) withObject:nil afterDelay:0.25];
+            [self.autoScrollView setContentOffset:CGPointMake(self.autoScrollView.contentOffset.x,self.autoScrollView.contentOffset.y - self.autoScrollView.bounds.size.height) animated:YES];
+        }
+    }
+    else
+    {
+        if (self.autoScrollView.contentOffset.x > 0)
+        {
+            self.userInteractionEnabled = NO;
+            [self performSelector:@selector(animationControl) withObject:nil afterDelay:0.25];
+            [self.autoScrollView setContentOffset:CGPointMake(self.autoScrollView.contentOffset.x - self.autoScrollView.bounds.size.width, self.autoScrollView.contentOffset.y) animated:YES];
+        }
     }
 }
 - (void)animationControl
@@ -319,30 +407,43 @@
 - (void)tap:(UIGestureRecognizer *)tapGesture
 {
     CGPoint tapPoint = [tapGesture locationInView:self];
-    if (tapPoint.x < self.center.x)
+    if (self.verticalScroll)
     {
-        [self privatePage];
+        if (tapPoint.y < self.center.y)
+        {
+            [self privatePage];
+        }
+        else
+        {
+            [self nextPage];
+        }
     }
     else
     {
-        [self nextPage];
+        if (tapPoint.x < self.center.x)
+        {
+            [self privatePage];
+        }
+        else
+        {
+            [self nextPage];
+        }
     }
 }
 - (void)leftSwip:(UISwipeGestureRecognizer *)leftSwip
 {
-    NSLog(@"+++++ %@",self.gestureRecognizers);
     [self nextPage];
 }
 - (void)rightSwip:(UISwipeGestureRecognizer *)leftSwip
 {
     [self privatePage];
 }
-- (void)setVerticalScroll:(BOOL)verticalScroll
+- (void)downSwip:(UISwipeGestureRecognizer *)topSwip
 {
-    if (_verticalScroll == verticalScroll )
-        return;
-    _verticalScroll = verticalScroll;
-    [self setupGesture];
-    [self reloadData];
+    [self privatePage];
+}
+- (void)upSwip:(UISwipeGestureRecognizer *)bottomSwip
+{
+    [self nextPage];
 }
 @end

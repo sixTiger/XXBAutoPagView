@@ -11,6 +11,7 @@
 #import "XXBAutoPagViewCell.h"
 
 @interface ViewController ()<XXBAutoPagViewDataSource , XXBAutoPagViewDelegate>
+@property (weak, nonatomic) IBOutlet XXBAutoPagView *autoPageView;
 
 @end
 
@@ -19,6 +20,12 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
+    self.autoPageView.hidden = YES;
+    [self setupAutoPageView];
+
+}
+- (void)setupAutoPageView
+{
     XXBAutoPagView *autoPageView = [[XXBAutoPagView alloc] initWithFrame:[UIScreen mainScreen].bounds];
     [self.view addSubview:autoPageView];
     

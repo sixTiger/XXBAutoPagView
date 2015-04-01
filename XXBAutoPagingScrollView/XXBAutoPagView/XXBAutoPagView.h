@@ -46,8 +46,8 @@ typedef enum {
 @end
 
 @interface XXBAutoPagView : UIView
-@property(nonatomic , weak)  id<XXBAutoPagViewDelegate>     delegate;
-@property(nonatomic , weak)  id<XXBAutoPagViewDataSource>   dataSource;
+@property(nonatomic , weak) IBOutlet id<XXBAutoPagViewDelegate>     delegate;
+@property(nonatomic , weak) IBOutlet id<XXBAutoPagViewDataSource>   dataSource;
 /**
  *  是否分页
  */
