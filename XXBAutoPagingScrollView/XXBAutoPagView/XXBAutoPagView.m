@@ -203,7 +203,7 @@
         }
     }
 }
-- (id)dequeueReusableCellWithIdentifier:(NSString *)identifier
+- (XXBAutoPagViewCell *)dequeueReusableCellWithIdentifier:(NSString *)identifier
 {
     __block XXBAutoPagViewCell *reusableCell = nil;
     NSMutableSet *cellSet = [self.reusableCellDict valueForKey:identifier];
@@ -213,6 +213,10 @@
         [cellSet removeObject:reusableCell];
     }
     return reusableCell;
+}
+- (XXBAutoPagViewCell *)autoPageCellWithIdex:(NSInteger)index
+{
+    return [self.displayingCells objectForKey:@(index)];
 }
 #pragma mark - 私有方法
 /**

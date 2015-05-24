@@ -63,4 +63,20 @@ typedef enum {
 // 是否垂直滚动 默认是否
 @property(nonatomic , assign)BOOL verticalScroll;
 - (void)reloadData;
+/**
+ *  根据标识返回重用的cell
+ *
+ *  @param identifir 重用标示
+ *
+ *  @return 可以重用的cell;
+ */
+- (XXBAutoPagViewCell *)dequeueReusableCellWithIdentifier:(NSString *)identifier;
+/**
+ *  根据indexcell
+ *
+ *  @param index 需要的index
+ *
+ *  @return 返回的cell
+ */
+- (XXBAutoPagViewCell *)autoPageCellWithIdex:(NSInteger)index;
 @end
