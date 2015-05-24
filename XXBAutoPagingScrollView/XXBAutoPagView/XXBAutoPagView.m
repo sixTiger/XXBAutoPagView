@@ -95,10 +95,6 @@
         
     }
 }
-- (void)willMoveToSuperview:(UIView *)newSuperview
-{
-    [self reloadData];
-}
 /**
  *  刷新数据
  */
@@ -224,7 +220,6 @@
  */
 - (BOOL)isInScreen:(CGRect)frame
 {
-    NSLog(@"%@",@(self.autoScrollView.subviews.count));
     if (self.verticalScroll)
     {
         if (CGRectGetMaxY(frame) > self.autoScrollView.contentOffset.y - self.autoScrollView.frame.origin.y && CGRectGetMinY(frame) < self.autoScrollView.contentOffset.y + self.autoScrollView.frame.size.height + self.bounds.size.height - CGRectGetMaxY(self.autoScrollView.frame))
@@ -279,6 +274,8 @@
         autoScrollView.pagingEnabled = self.pagingEnabled;
         autoScrollView.delegate = self;
         autoScrollView.clipsToBounds = NO;
+        autoScrollView.showsHorizontalScrollIndicator = self.showsHorizontalScrollIndicator;
+        autoScrollView.showsVerticalScrollIndicator = self.showsVerticalScrollIndicator;
         [self addSubview:autoScrollView];
         _autoScrollView = autoScrollView;
     }
