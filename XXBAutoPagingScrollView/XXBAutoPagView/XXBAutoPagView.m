@@ -136,7 +136,7 @@
         CGFloat columnMargin =[self marginForType:XXBAutoPagViewMarginTypeColumn];
         for (int i = 0; i<numberOfCells; i++)
         {
-            cellX = i * (cellW + columnMargin)+ columnMargin * 0.5;
+            cellX = i * (cellW + columnMargin) + columnMargin * 0.5;
             // 添加frame到数组中
             CGRect cellFrame = CGRectMake(cellX, cellY, cellW, cellH);
             [self.cellFrames addObject:[NSValue valueWithCGRect:cellFrame]];
@@ -266,14 +266,15 @@
     if (_autoScrollView == nil)
     {
         [self setupGesture];
-        CGFloat x = [self marginForType:XXBAutoPagViewMarginTypeLeft];
-        CGFloat y = [self marginForType:XXBAutoPagViewMarginTypeTop];
+        CGFloat x = [self marginForType:XXBAutoPagViewMarginTypeLeft] - [self marginForType:XXBAutoPagViewMarginTypeColumn] * 0.5;
+        CGFloat y = [self marginForType:XXBAutoPagViewMarginTypeTop] - [self marginForType:XXBAutoPagViewMarginTypeRow] * 0.5;
         CGFloat w = [self autoScrollViewWidth];
         CGFloat h = [self autoScrollViewHeight];
         UIScrollView *autoScrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(x, y, w, h)];
         autoScrollView.pagingEnabled = self.pagingEnabled;
         autoScrollView.delegate = self;
         autoScrollView.clipsToBounds = NO;
+        autoScrollView.backgroundColor = [UIColor redColor];
         autoScrollView.showsHorizontalScrollIndicator = self.showsHorizontalScrollIndicator;
         autoScrollView.showsVerticalScrollIndicator = self.showsVerticalScrollIndicator;
         [self addSubview:autoScrollView];

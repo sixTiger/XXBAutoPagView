@@ -61,12 +61,12 @@
         }
         case XXBAutoPagViewMarginTypeLeft:
         {
-            return 40;
+            return 30;
             break;
         }
         case XXBAutoPagViewMarginTypeRight:
         {
-            return 40;
+            return 30;
             break;
         }
         case XXBAutoPagViewMarginTypeColumn:
