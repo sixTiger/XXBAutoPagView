@@ -54,8 +54,6 @@
 - (void)layoutSubviews
 {
     [super layoutSubviews];
-    [self.autoScrollView removeFromSuperview];
-    self.autoScrollView = nil;
     [self reloadData];
 }
 - (void)setupGesture
@@ -96,6 +94,27 @@
     }
 }
 /**
+ *  在index处添加一个cell
+ *
+ *  @param index 要添加的地方
+ */
+- (void)addCellAtIndex:(NSInteger )index
+{
+#warning 有问题
+    [self reloadFrame];
+    
+    [self scrollViewDidScroll:self.autoScrollView];
+}
+/**
+ *  在index处删除一个cell
+ *
+ *  @param index 要删除的index
+ */
+- (void)deleteCellAtIndex:(NSInteger)index
+{
+#warning 还没有写
+}
+/**
  *  刷新数据
  */
 - (void)reloadData
@@ -106,6 +125,11 @@
     [self.displayingCells removeAllObjects];
     [self.cellFrames removeAllObjects];
     [self.reusableCellDict removeAllObjects];
+    [self reloadFrame];
+    [self scrollViewDidScroll:self.autoScrollView];
+}
+- (void)reloadFrame
+{
     // cell的总数
     NSInteger numberOfCells = [self.dataSource numberOfCellInAutoPagView:self];
     if (self.verticalScroll)
@@ -116,7 +140,7 @@
         CGFloat cellH = [self cellHeight];
         // 计算所有cell的frame
         CGFloat rowMargin =[self marginForType:XXBAutoPagViewMarginTypeRow];
-        for (int i = 0; i<numberOfCells; i++)
+        for (NSInteger i = 0; i<numberOfCells; i++)
         {
             cellY = i * (cellH + rowMargin)+ rowMargin * 0.5;
             // 添加frame到数组中
@@ -134,7 +158,7 @@
         CGFloat cellH = [self cellHeight];
         // 计算所有cell的frame
         CGFloat columnMargin =[self marginForType:XXBAutoPagViewMarginTypeColumn];
-        for (int i = 0; i<numberOfCells; i++)
+        for (NSInteger i = 0; i<numberOfCells; i++)
         {
             cellX = i * (cellW + columnMargin) + columnMargin * 0.5;
             // 添加frame到数组中
@@ -143,7 +167,6 @@
         }
         self.autoScrollView.contentSize = CGSizeMake(numberOfCells * (cellW + columnMargin), cellH);
     }
-    [self scrollViewDidScroll:self.autoScrollView];
 }
 - (CGFloat)cellWidth
 {
@@ -281,6 +304,8 @@
         autoScrollView.backgroundColor = [UIColor redColor];
         autoScrollView.showsHorizontalScrollIndicator = self.showsHorizontalScrollIndicator;
         autoScrollView.showsVerticalScrollIndicator = self.showsVerticalScrollIndicator;
+        autoScrollView.alwaysBounceHorizontal = !self.verticalScroll;
+        autoScrollView.alwaysBounceVertical = self.verticalScroll;
         [self addSubview:autoScrollView];
         _autoScrollView = autoScrollView;
     }
@@ -288,17 +313,11 @@
 }
 -  (void)setDelegate:(id<XXBAutoPagViewDelegate>)delegate
 {
-    [self.autoScrollView removeFromSuperview];
-    self.autoScrollView = nil;
     _delegate = delegate;
-    [self reloadData];
 }
 - (void)setDataSource:(id<XXBAutoPagViewDataSource>)dataSource
 {
     _dataSource = dataSource;
-    [self.autoScrollView removeFromSuperview];
-    self.autoScrollView = nil;
-    [self reloadData];
 }
 /**
  *  cell的宽度
@@ -356,7 +375,6 @@
         return;
     _verticalScroll = verticalScroll;
     [self setupGesture];
-    [self reloadData];
 }
 - (void)nextPage
 {
@@ -409,6 +427,20 @@
 - (void)tap:(UIGestureRecognizer *)tapGesture
 {
     CGPoint tapPoint = [tapGesture locationInView:self];
+    if (CGRectContainsPoint(self.autoScrollView.frame, tapPoint))
+    {
+        if ([self.delegate respondsToSelector:@selector(autoPagView:didSelectedCellAtIndex:)])
+        {
+            NSInteger index = self.autoScrollView.contentOffset.x/self.autoScrollView.bounds.size.width;
+            if (self.verticalScroll)
+            {
+                index = self.autoScrollView.contentOffset.x/self.autoScrollView.bounds.size.height;
+            }
+            [self.delegate autoPagView:self didSelectedCellAtIndex:index];
+        }
+        return;
+    }
+
     if (self.verticalScroll)
     {
         if (tapPoint.y < self.center.y)

@@ -43,6 +43,10 @@ typedef enum {
  *  cell 上下左右的边距
  */
 - (CGFloat)autoPagView:(XXBAutoPagView *)autoPagView marginForType:(XXBAutoPagViewMarginType)type;
+/**
+ *  cell 被点击
+ */
+- (void)autoPagView:(XXBAutoPagView *)autoPagView didSelectedCellAtIndex:(NSInteger)index;
 @end
 
 @interface XXBAutoPagView : UIView
@@ -79,4 +83,16 @@ typedef enum {
  *  @return 返回的cell
  */
 - (XXBAutoPagViewCell *)autoPageCellWithIdex:(NSInteger)index;
+/**
+ *  在index处添加一个按钮
+ *
+ *  @param index 要添加的地方
+ */
+- (void)addCellAtIndex:(NSInteger )index;
+/**
+ *  在index处添加一个按钮
+ *
+ *  @param index 要添加的地方
+ */
+- (void)deleteCellAtIndex:(NSInteger )index;
 @end
