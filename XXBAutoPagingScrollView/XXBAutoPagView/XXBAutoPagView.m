@@ -163,7 +163,6 @@
         return obj1.index > obj2.index;
     }];
     [self resetAotoPageViewFrameFromIndex:index];
-    [self scrollViewDidScroll:self.autoScrollView];
 }
 /**
  *  在index处删除一个cell
@@ -176,12 +175,16 @@
     NSInteger count = self.cellFrames.count;
     // 优先从字典中取出i位置的cell
     XXBAutoPagViewCell *cell = self.displayingCells[@(index)];
-    [UIView animateWithDuration:0.25 animations:^{
-        cell.alpha = 0.0;
-    } completion:^(BOOL finished) {
-       
+    
+#warning 专场动画 可以自行修改
+    // 转场动画
+    CATransition *transition = [CATransition animation];
+    transition.type = @"rippleEffect";
+    transition.duration = 0.25;
+    [cell.layer addAnimation:transition forKey:nil];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.25 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [cell removeFromSuperview];
-    }];
+    });
     [self.displayingCells removeObjectForKey:@(index)];
     for (NSInteger cellIndex = index; cellIndex <= count ; cellIndex ++ )
     {
@@ -347,9 +350,13 @@
             if (cell == nil) {
                 cell = [self.dataSource autoPagViewCell:self cellAtIndex:index];
                 cell.frame = cellFrame;
-                [UIView animateWithDuration:0.25 animations:^{
-                    [self.autoScrollView addSubview:cell];
-                }];
+                [self.autoScrollView addSubview:cell];
+#warning 转场动画可以自己修改
+                // 转场动画
+                CATransition *transition = [CATransition animation];
+                transition.type = @"rippleEffect";
+                transition.duration = 0.25;
+                [cell.layer addAnimation:transition forKey:nil];
                 // 存放到字典中
                 self.displayingCells[@(index)] = cell;
             }
