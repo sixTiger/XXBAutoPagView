@@ -136,7 +136,7 @@
  */
 - (void)addCellAtIndex:(NSInteger )index
 {
-#warning 有问题 动画效果没有写
+#warning 有问题  差点动画效果
     //    [self reloadFrame];
     //    [self scrollViewDidScroll:self.autoScrollView];
     [self reloadData];
@@ -214,6 +214,7 @@
         self.autoScrollView.contentSize = CGSizeMake(numberOfCells * (cellW + columnMargin), cellH);
     }
 }
+//对应index的frame
 - (CGRect)autoPagViewCellFrameOfIndex:(NSInteger)index
 {
     if (self.verticalScroll)
@@ -289,6 +290,62 @@
                         cellSet = [NSMutableSet set];
                         [self.reusableCellDict setValue:cellSet forKey:cell.identifier];
                         
+                    }
+                    [cellSet addObject:cell];
+                }
+            }
+        }
+    }
+}
+/**
+ *  重新设置AotoPageView的Frame
+ *
+ *  @param index 开始的index
+ */
+- (void)resetAotoPageViewFrameFromIndex:(NSInteger)index
+{
+    // 向数据源索要对应位置的cell
+    NSUInteger numberOfCells = self.cellFrames.count;
+    for (; index<numberOfCells; index++)
+    {
+        // 取出i位置的frame
+        CGRect cellFrame = [self.cellFrames[index] frame];
+        // 优先从字典中取出i位置的cell
+        XXBAutoPagViewCell *cell = self.displayingCells[@(index)];
+        // 判断i位置对应的frame在不在屏幕上（能否看见）
+        if ([self isInScreen:cellFrame])
+        { // 在屏幕上
+            if (cell == nil) {
+                cell = [self.dataSource autoPagViewCell:self cellAtIndex:index];
+                cell.frame = cellFrame;
+                [UIView animateWithDuration:0.25 animations:^{
+                    [self.autoScrollView addSubview:cell];
+                }];
+                // 存放到字典中
+                self.displayingCells[@(index)] = cell;
+            }
+            else
+            {
+                [UIView animateWithDuration:0.25 animations:^{
+                    cell.frame = cellFrame;
+                }];
+            }
+        }
+        else
+        {  // 不在屏幕上
+            if (cell)
+            {
+                // 从scrollView和字典中移除
+                [cell removeFromSuperview];
+                [self.displayingCells removeObjectForKey:@(index)];
+                if(cell.identifier)
+                {
+                    // 存放进缓存池
+                    NSMutableSet *cellSet = [self.reusableCellDict valueForKey:cell.identifier];
+                    if (cellSet == nil)
+                    {
+                        cellSet = [NSMutableSet set];
+                        [self.reusableCellDict setValue:cellSet forKey:cell.identifier];
                     }
                     [cellSet addObject:cell];
                 }
