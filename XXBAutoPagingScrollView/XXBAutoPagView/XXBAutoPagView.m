@@ -520,15 +520,16 @@
 }
 @end
 
-
 /**
  *  存放cell的frame的模型
  */
 @interface XXBAutoCellModel : NSObject
+
 /**
  *  下标
  */
 @property(nonatomic , assign)NSInteger index;
+
 /**
  *  frame
  */
