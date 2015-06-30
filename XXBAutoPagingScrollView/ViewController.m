@@ -130,7 +130,7 @@
     if (_dataSourceArray == nil)
     {
         _dataSourceArray = [NSMutableArray array];
-        for(int  i = 0 ; i < 10 ; i++)
+        for(int  i = 0 ; i < 2 ; i++)
         {
            [_dataSourceArray addObject:@(i)];
         }

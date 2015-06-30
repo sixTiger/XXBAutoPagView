@@ -94,27 +94,6 @@
     }
 }
 /**
- *  在index处添加一个cell
- *
- *  @param index 要添加的地方
- */
-- (void)addCellAtIndex:(NSInteger )index
-{
-#warning 有问题
-    [self reloadFrame];
-    
-    [self scrollViewDidScroll:self.autoScrollView];
-}
-/**
- *  在index处删除一个cell
- *
- *  @param index 要删除的index
- */
-- (void)deleteCellAtIndex:(NSInteger)index
-{
-#warning 还没有写
-}
-/**
  *  刷新数据
  */
 - (void)reloadData
@@ -128,6 +107,62 @@
     [self reloadFrame];
     [self scrollViewDidScroll:self.autoScrollView];
 }
+/**
+ *  在index处添加一个cell
+ *
+ *  @param index 要添加的地方
+ */
+- (void)addCellAtIndex:(NSInteger )index
+{
+#warning 有问题 动画效果没有写
+    //    [self reloadFrame];
+    //    [self scrollViewDidScroll:self.autoScrollView];
+    [self reloadData];
+    [self nextPage];
+}
+/**
+ *  在index处删除一个cell
+ *
+ *  @param index 要删除的index
+ */
+- (void)deleteCellAtIndex:(NSInteger)index
+{
+    //    // 取出i位置的frame
+    //    CGRect cellFrame = [self.cellFrames[index] CGRectValue];
+    //    // 优先从字典中取出i位置的cell
+    //    XXBAutoPagViewCell *cell = self.displayingCells[@(index)];
+    //    // 判断i位置对应的frame在不在屏幕上（能否看见）
+    //    if ([self isInScreen:cellFrame])
+    //    { // 在屏幕上
+    //        if (cell)
+    //        {
+    //            // 从scrollView和字典中移除
+    //            [cell removeFromSuperview];
+    //            [self.displayingCells removeObjectForKey:@(index)];
+    //            if(cell.identifier)
+    //            {
+    //                // 存放进缓存池
+    //                NSMutableSet *cellSet = [self.reusableCellDict valueForKey:cell.identifier];
+    //                if (cellSet == nil)
+    //                {
+    //                    cellSet = [NSMutableSet set];
+    //                    [self.reusableCellDict setValue:cellSet forKey:cell.identifier];
+    //
+    //                }
+    //                [UIView animateWithDuration:0.15 animations:^{
+    //
+    //                    [cellSet addObject:cell];
+    //                }];
+    //            }
+    //        }
+    //    }
+    //    [self reloadFrame];
+    //    [self scrollViewDidScroll:self.autoScrollView];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [self reloadData];
+    });
+}
+
 - (void)reloadFrame
 {
     // cell的总数
@@ -147,7 +182,6 @@
             CGRect cellFrame = CGRectMake(cellX, cellY, cellW, cellH);
             [self.cellFrames addObject:[NSValue valueWithCGRect:cellFrame]];
         }
-        
         self.autoScrollView.contentSize = CGSizeMake(cellW,numberOfCells * (cellH + rowMargin));
     }
     else
@@ -187,10 +221,8 @@
     {
         // 取出i位置的frame
         CGRect cellFrame = [self.cellFrames[index] CGRectValue];
-        
         // 优先从字典中取出i位置的cell
         XXBAutoPagViewCell *cell = self.displayingCells[@(index)];
-        
         // 判断i位置对应的frame在不在屏幕上（能否看见）
         if ([self isInScreen:cellFrame])
         { // 在屏幕上
@@ -376,6 +408,9 @@
     _verticalScroll = verticalScroll;
     [self setupGesture];
 }
+/**
+ *  下一页
+ */
 - (void)nextPage
 {
     if (self.verticalScroll)
@@ -397,6 +432,9 @@
         }
     }
 }
+/**
+ *  上一页
+ */
 - (void)privatePage
 {
     if (self.verticalScroll)
