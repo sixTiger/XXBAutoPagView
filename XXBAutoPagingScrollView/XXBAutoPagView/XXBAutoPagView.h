@@ -76,7 +76,7 @@ typedef enum {
  *
  *  @param index 需要的index
  *
- *  @return 返回的cell
+ *  @return 返回的cell 《注意只返回在屏幕上显示的cell》
  */
 - (XXBAutoPagViewCell *)autoPageCellWithIdex:(NSInteger)index;
 /**

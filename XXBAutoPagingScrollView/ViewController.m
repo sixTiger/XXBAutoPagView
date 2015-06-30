@@ -38,9 +38,8 @@
 }
 - (void)addbuttonClick
 {
-    NSLog(@"add");
-    [self.dataSourceArray addObject:@""];
-    [self.autoPageView addCellAtIndex:2];
+    [self.dataSourceArray insertObject:[NSString stringWithFormat:@"++ %@",@(self.dataSourceArray.count)] atIndex:0];
+    [self.autoPageView addCellAtIndex:0];
 }
 - (void)deleteButtonClick
 {
@@ -56,7 +55,7 @@
     autoPageView.pagingEnabled = YES;
     autoPageView.showsHorizontalScrollIndicator = NO;
     autoPageView.showsVerticalScrollIndicator = NO;
-    autoPageView.verticalScroll = YES;
+    autoPageView.verticalScroll = NO;
     _autoPageView = autoPageView;
 }
 - (void)autoPagView:(XXBAutoPagView *)autoPagView didSelectedCellAtIndex:(NSInteger)index
@@ -71,7 +70,7 @@
 {
     XXBAutoPagViewCell *autoCell = [[XXBAutoPagViewCell alloc] init];
     autoCell.backgroundColor = [UIColor colorWithRed:(arc4random_uniform(255)/255.0) green:(arc4random_uniform(255)/255.0) blue:(arc4random_uniform(255)/255.0) alpha:1.0];
-    autoCell.title = [NSString stringWithFormat:@"第%@个cell",@(index)];
+    autoCell.title = [NSString stringWithFormat:@"第%@个cell",self.dataSourceArray[index]];
     return autoCell;
 }
 /**
@@ -129,7 +128,7 @@
     if (_dataSourceArray == nil)
     {
         _dataSourceArray = [NSMutableArray array];
-        for(int  i = 0 ; i < 2 ; i++)
+        for(int  i = 0 ; i < 3 ; i++)
         {
            [_dataSourceArray addObject:@(i)];
         }

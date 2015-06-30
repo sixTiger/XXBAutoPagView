@@ -32,12 +32,16 @@
 {
     return self.index == other.index;
 }
+- (NSString *)description
+{
+    return [NSString stringWithFormat:@"<%@:%p>\n index : %@ \n frame : %@",[self class],self,@(self.index),NSStringFromCGRect(self.frame)];
+}
 @end
 
 @interface XXBAutoPagView ()<UIScrollViewDelegate , UIGestureRecognizerDelegate>
 
 /**
- *  所有cell的frame数据
+ *  所有cell的frame相关模型的数组
  */
 @property (nonatomic, strong) NSMutableArray        *cellFrames;
 /**
@@ -49,7 +53,7 @@
  */
 @property(nonatomic , strong)NSMutableDictionary    *reusableCellDict;
 /**
- *  华东的cell
+ *  滑动的cell
  */
 @property(nonatomic , weak)UIScrollView             *autoScrollView;
 @end
@@ -136,11 +140,32 @@
  */
 - (void)addCellAtIndex:(NSInteger )index
 {
-#warning 有问题  差点动画效果
-    //    [self reloadFrame];
-    //    [self scrollViewDidScroll:self.autoScrollView];
-    [self reloadData];
-    [self nextPage];
+    for (NSInteger cellIndex = self.cellFrames.count -1; cellIndex >= index ; cellIndex -- )
+    {
+        //把可视字典的下标依次前移
+        XXBAutoPagViewCell *cell = self.displayingCells[@(cellIndex)];
+        if (cell)
+        {
+            self.displayingCells[@(cellIndex + 1)] = cell;
+            [self.displayingCells removeObjectForKey:@(cellIndex)];
+        }
+    }
+    NSInteger count = self.cellFrames.count;
+    for (NSInteger i = index; i < count; i++)
+    {
+        XXBAutoCellFrame *autoCellFrame = self.cellFrames[i];
+        autoCellFrame.frame = [self autoPagViewCellFrameOfIndex:i + 1];
+        autoCellFrame.index ++;
+    }
+    XXBAutoCellFrame *autoCellFrame = [[XXBAutoCellFrame alloc] init];
+    autoCellFrame.index = index;
+    autoCellFrame.frame = [self autoPagViewCellFrameOfIndex:index];
+    [self.cellFrames addObject:autoCellFrame];
+    [self.cellFrames sortUsingComparator:^NSComparisonResult(XXBAutoCellFrame *obj1, XXBAutoCellFrame *obj2) {
+        return obj1.index > obj2.index;
+    }];
+    [self resetAotoPageViewFrameFromIndex:index];
+    [self scrollViewDidScroll:self.autoScrollView];
 }
 /**
  *  在index处删除一个cell
@@ -149,40 +174,41 @@
  */
 - (void)deleteCellAtIndex:(NSInteger)index
 {
-    //    // 取出i位置的frame
-    //    CGRect cellFrame = [self.cellFrames[index] CGRectValue];
-    //    // 优先从字典中取出i位置的cell
-    //    XXBAutoPagViewCell *cell = self.displayingCells[@(index)];
-    //    // 判断i位置对应的frame在不在屏幕上（能否看见）
-    //    if ([self isInScreen:cellFrame])
-    //    { // 在屏幕上
-    //        if (cell)
-    //        {
-    //            // 从scrollView和字典中移除
-    //            [cell removeFromSuperview];
-    //            [self.displayingCells removeObjectForKey:@(index)];
-    //            if(cell.identifier)
-    //            {
-    //                // 存放进缓存池
-    //                NSMutableSet *cellSet = [self.reusableCellDict valueForKey:cell.identifier];
-    //                if (cellSet == nil)
-    //                {
-    //                    cellSet = [NSMutableSet set];
-    //                    [self.reusableCellDict setValue:cellSet forKey:cell.identifier];
-    //
-    //                }
-    //                [UIView animateWithDuration:0.15 animations:^{
-    //
-    //                    [cellSet addObject:cell];
-    //                }];
-    //            }
-    //        }
-    //    }
-    //    [self reloadFrame];
-    //    [self scrollViewDidScroll:self.autoScrollView];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [self reloadData];
-    });
+    
+    NSInteger count = self.cellFrames.count;
+    // 优先从字典中取出i位置的cell
+    XXBAutoPagViewCell *cell = self.displayingCells[@(index)];
+    [UIView animateWithDuration:0.25 animations:^{
+        cell.alpha = 0.0;
+    } completion:^(BOOL finished) {
+       
+        [cell removeFromSuperview];
+    }];
+    [self.displayingCells removeObjectForKey:@(index)];
+    for (NSInteger cellIndex = index; cellIndex <= count ; cellIndex ++ )
+    {
+        //把可视字典的下标
+        XXBAutoPagViewCell *cell = self.displayingCells[@(cellIndex)];
+        if (cell)
+        {
+            self.displayingCells[@(cellIndex - 1)] = cell;
+            [self.displayingCells removeObjectForKey:@(cellIndex)];
+        }
+    }
+    for (NSInteger i = index + 1; i < count; i++)
+    {
+        XXBAutoCellFrame *autoCellFrame = self.cellFrames[i];
+        autoCellFrame.frame = [self autoPagViewCellFrameOfIndex:i - 1];
+        autoCellFrame.index --;
+    }
+    if (self.cellFrames.count > 0)
+    {
+        [self.cellFrames removeObjectAtIndex:index];
+        [self.cellFrames sortUsingComparator:^NSComparisonResult(XXBAutoCellFrame *obj1, XXBAutoCellFrame *obj2) {
+            return obj1.index > obj2.index;
+        }];
+    }
+    [self resetAotoPageViewFrameFromIndex:index];
 }
 
 - (void)reloadFrame
@@ -197,6 +223,10 @@
         // 添加frame到数组中
         [self.cellFrames addObject:autoCellFrame];
     }
+    [self setAutoScrollViewContentsizeWithCellCount:numberOfCells];
+}
+- (void)setAutoScrollViewContentsizeWithCellCount:(NSInteger)numberOfCells
+{
     if (self.verticalScroll)
     {
         CGFloat cellW = [self cellWidth];
@@ -306,6 +336,7 @@
 {
     // 向数据源索要对应位置的cell
     NSUInteger numberOfCells = self.cellFrames.count;
+    [self setAutoScrollViewContentsizeWithCellCount:numberOfCells];
     for (; index<numberOfCells; index++)
     {
         // 取出i位置的frame
