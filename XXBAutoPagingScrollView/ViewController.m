@@ -51,7 +51,6 @@
 {
     XXBAutoPagView *autoPageView = [[XXBAutoPagView alloc] initWithFrame:[UIScreen mainScreen].bounds];
     [self.view addSubview:autoPageView];
-    
     autoPageView.dataSource = self;
     autoPageView.delegate = self;
     autoPageView.pagingEnabled = YES;
