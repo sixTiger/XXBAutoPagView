@@ -519,3 +519,24 @@
     [self nextPage];
 }
 @end
+
+
+/**
+ *  存放cell的frame的模型
+ */
+@interface XXBAutoCellModel : NSObject
+/**
+ *  下标
+ */
+@property(nonatomic , assign)NSInteger index;
+/**
+ *  frame
+ */
+@property(nonatomic , assign)CGRect frame;
+@end
+@implementation XXBAutoCellModel
+- (BOOL)isEqual:(XXBAutoCellModel *)other
+{
+    return self.index == other.index;
+}
+@end
