@@ -75,6 +75,14 @@
     autoCell.title = [NSString stringWithFormat:@"第%@个cell",@(index)];
     return autoCell;
 }
+/**
+ *  上下左右的边距
+ *
+ *  @param autoPagView autoPagView
+ *  @param type        XXBAutoPagViewMarginType（边距类型上下左右）
+ *
+ *  @return 边距的大小
+ */
 - (CGFloat)autoPagView:(XXBAutoPagView *)autoPagView marginForType:(XXBAutoPagViewMarginType)type
 {
     switch (type) {
@@ -122,8 +130,10 @@
     if (_dataSourceArray == nil)
     {
         _dataSourceArray = [NSMutableArray array];
-        [_dataSourceArray addObject:@"0000"];
-        [_dataSourceArray addObject:@"1111"];
+        for(int  i = 0 ; i < 10 ; i++)
+        {
+           [_dataSourceArray addObject:@(i)];
+        }
     }
     return _dataSourceArray;
 }
