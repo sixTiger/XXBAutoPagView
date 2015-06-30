@@ -56,7 +56,7 @@
     autoPageView.pagingEnabled = YES;
     autoPageView.showsHorizontalScrollIndicator = NO;
     autoPageView.showsVerticalScrollIndicator = NO;
-    autoPageView.verticalScroll = NO;
+    autoPageView.verticalScroll = YES;
     _autoPageView = autoPageView;
 }
 - (void)autoPagView:(XXBAutoPagView *)autoPagView didSelectedCellAtIndex:(NSInteger)index

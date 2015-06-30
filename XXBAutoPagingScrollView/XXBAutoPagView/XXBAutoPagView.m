@@ -12,6 +12,28 @@
 #define XXBCellMargin 10
 #define XXBViewMargin 40
 
+/**
+ *  存放cell的frame的模型
+ */
+@interface XXBAutoCellFrame : NSObject
+
+/**
+ *  下标
+ */
+@property(nonatomic , assign)NSInteger index;
+
+/**
+ *  frame
+ */
+@property(nonatomic , assign)CGRect frame;
+@end
+@implementation XXBAutoCellFrame
+- (BOOL)isEqual:(XXBAutoCellFrame *)other
+{
+    return self.index == other.index;
+}
+@end
+
 @interface XXBAutoPagView ()<UIScrollViewDelegate , UIGestureRecognizerDelegate>
 
 /**
@@ -167,6 +189,33 @@
 {
     // cell的总数
     NSInteger numberOfCells = [self.dataSource numberOfCellInAutoPagView:self];
+    for (NSInteger i = 0; i<numberOfCells; i++)
+    {
+        XXBAutoCellFrame *autoCellFrame = [[XXBAutoCellFrame alloc] init] ;
+        autoCellFrame.index = i;
+        autoCellFrame.frame = [self autoPagViewCellFrameOfIndex:i];
+        // 添加frame到数组中
+        [self.cellFrames addObject:autoCellFrame];
+    }
+    if (self.verticalScroll)
+    {
+        CGFloat cellW = [self cellWidth];
+        CGFloat cellH = [self cellHeight];
+        // 计算所有cell的frame
+        CGFloat rowMargin =[self marginForType:XXBAutoPagViewMarginTypeRow];
+        self.autoScrollView.contentSize = CGSizeMake(cellW,numberOfCells * (cellH + rowMargin));
+    }
+    else
+    {
+        CGFloat cellW = [self cellWidth];
+        CGFloat cellH = [self cellHeight];
+        // 计算所有cell的frame
+        CGFloat columnMargin =[self marginForType:XXBAutoPagViewMarginTypeColumn];
+        self.autoScrollView.contentSize = CGSizeMake(numberOfCells * (cellW + columnMargin), cellH);
+    }
+}
+- (CGRect)autoPagViewCellFrameOfIndex:(NSInteger)index
+{
     if (self.verticalScroll)
     {
         CGFloat cellX = [self marginForType:XXBAutoPagViewMarginTypeColumn] * 0.5;
@@ -175,14 +224,8 @@
         CGFloat cellH = [self cellHeight];
         // 计算所有cell的frame
         CGFloat rowMargin =[self marginForType:XXBAutoPagViewMarginTypeRow];
-        for (NSInteger i = 0; i<numberOfCells; i++)
-        {
-            cellY = i * (cellH + rowMargin)+ rowMargin * 0.5;
-            // 添加frame到数组中
-            CGRect cellFrame = CGRectMake(cellX, cellY, cellW, cellH);
-            [self.cellFrames addObject:[NSValue valueWithCGRect:cellFrame]];
-        }
-        self.autoScrollView.contentSize = CGSizeMake(cellW,numberOfCells * (cellH + rowMargin));
+        cellY = index * (cellH + rowMargin)+ rowMargin * 0.5;
+        return  CGRectMake(cellX, cellY, cellW, cellH);
     }
     else
     {
@@ -192,15 +235,11 @@
         CGFloat cellH = [self cellHeight];
         // 计算所有cell的frame
         CGFloat columnMargin =[self marginForType:XXBAutoPagViewMarginTypeColumn];
-        for (NSInteger i = 0; i<numberOfCells; i++)
-        {
-            cellX = i * (cellW + columnMargin) + columnMargin * 0.5;
-            // 添加frame到数组中
-            CGRect cellFrame = CGRectMake(cellX, cellY, cellW, cellH);
-            [self.cellFrames addObject:[NSValue valueWithCGRect:cellFrame]];
-        }
-        self.autoScrollView.contentSize = CGSizeMake(numberOfCells * (cellW + columnMargin), cellH);
+        cellX = index * (cellW + columnMargin) + columnMargin * 0.5;
+        // 添加frame到数组中
+        return  CGRectMake(cellX, cellY, cellW, cellH);
     }
+    
 }
 - (CGFloat)cellWidth
 {
@@ -220,7 +259,7 @@
     for (int index = 0; index<numberOfCells; index++)
     {
         // 取出i位置的frame
-        CGRect cellFrame = [self.cellFrames[index] CGRectValue];
+        CGRect cellFrame = [self.cellFrames[index] frame];
         // 优先从字典中取出i位置的cell
         XXBAutoPagViewCell *cell = self.displayingCells[@(index)];
         // 判断i位置对应的frame在不在屏幕上（能否看见）
@@ -230,7 +269,6 @@
                 cell = [self.dataSource autoPagViewCell:self cellAtIndex:index];
                 cell.frame = cellFrame;
                 [self.autoScrollView addSubview:cell];
-                
                 // 存放到字典中
                 self.displayingCells[@(index)] = cell;
             }
@@ -406,6 +444,9 @@
     if (_verticalScroll == verticalScroll )
         return;
     _verticalScroll = verticalScroll;
+    
+    self.autoScrollView.alwaysBounceHorizontal = !self.verticalScroll;
+    self.autoScrollView.alwaysBounceVertical = self.verticalScroll;
     [self setupGesture];
 }
 /**
@@ -478,7 +519,7 @@
         }
         return;
     }
-
+    
     if (self.verticalScroll)
     {
         if (tapPoint.y < self.center.y)
@@ -517,27 +558,5 @@
 - (void)upSwip:(UISwipeGestureRecognizer *)bottomSwip
 {
     [self nextPage];
-}
-@end
-
-/**
- *  存放cell的frame的模型
- */
-@interface XXBAutoCellModel : NSObject
-
-/**
- *  下标
- */
-@property(nonatomic , assign)NSInteger index;
-
-/**
- *  frame
- */
-@property(nonatomic , assign)CGRect frame;
-@end
-@implementation XXBAutoCellModel
-- (BOOL)isEqual:(XXBAutoCellModel *)other
-{
-    return self.index == other.index;
 }
 @end
