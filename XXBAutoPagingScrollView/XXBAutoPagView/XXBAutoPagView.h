@@ -36,10 +36,6 @@ typedef enum {
 
 @optional
 /**
- *  第index位置cell对应的宽度
- */
-- (CGFloat)autoPagView:(XXBAutoPagView *)autoPageView weightAtIndex:(NSInteger)index;
-/**
  *  cell 上下左右的边距
  */
 - (CGFloat)autoPagView:(XXBAutoPagView *)autoPagView marginForType:(XXBAutoPagViewMarginType)type;

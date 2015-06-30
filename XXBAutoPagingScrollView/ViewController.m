@@ -49,17 +49,20 @@
 }
 - (void)setupAutoPageView
 {
+    // 创建一个 XXBAutoPagView
     XXBAutoPagView *autoPageView = [[XXBAutoPagView alloc] initWithFrame:[UIScreen mainScreen].bounds];
     [self.view addSubview:autoPageView];
-    
+    // 设置数据源和代理
     autoPageView.dataSource = self;
     autoPageView.delegate = self;
+    // 是否允许分页
     autoPageView.pagingEnabled = YES;
     autoPageView.showsHorizontalScrollIndicator = NO;
     autoPageView.showsVerticalScrollIndicator = NO;
     autoPageView.verticalScroll = NO;
     _autoPageView = autoPageView;
 }
+
 - (void)autoPagView:(XXBAutoPagView *)autoPagView didSelectedCellAtIndex:(NSInteger)index
 {
     NSLog(@"%@",@(index));
