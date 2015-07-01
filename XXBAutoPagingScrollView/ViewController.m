@@ -38,13 +38,24 @@
 }
 - (void)addbuttonClick
 {
-    [self.dataSourceArray insertObject:[NSString stringWithFormat:@"++ %@",@(self.dataSourceArray.count)] atIndex:0];
-    [self.autoPageView addCellAtIndex:0];
+    if(self.dataSourceArray.count > 1)
+    {
+        [self.dataSourceArray insertObject:[NSString stringWithFormat:@"++ %@",@(self.dataSourceArray.count)] atIndex:1];
+        [self.autoPageView addCellAtIndex:1];
+    }
+    else
+    {
+        [self.dataSourceArray insertObject:[NSString stringWithFormat:@"++ %@",@(self.dataSourceArray.count)] atIndex:0];
+        [self.autoPageView addCellAtIndex:0];
+    }
 }
 - (void)deleteButtonClick
 {
-    [self.dataSourceArray removeLastObject];
-    [self.autoPageView deleteCellAtIndex:0];
+    if (self.dataSourceArray.count >1)
+    {
+        [self.dataSourceArray removeObjectAtIndex:1];
+        [self.autoPageView deleteCellAtIndex:1];
+    }
 }
 - (void)setupAutoPageView
 {
