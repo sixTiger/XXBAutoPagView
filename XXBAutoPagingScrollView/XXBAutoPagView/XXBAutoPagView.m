@@ -464,7 +464,6 @@
         autoScrollView.pagingEnabled = self.pagingEnabled;
         autoScrollView.delegate = self;
         autoScrollView.clipsToBounds = NO;
-        autoScrollView.backgroundColor = [UIColor redColor];
         autoScrollView.showsHorizontalScrollIndicator = self.showsHorizontalScrollIndicator;
         autoScrollView.showsVerticalScrollIndicator = self.showsVerticalScrollIndicator;
         autoScrollView.alwaysBounceHorizontal = !self.verticalScroll;
@@ -612,7 +611,6 @@
         }
         return;
     }
-    
     if (self.verticalScroll)
     {
         if (tapPoint.y < self.center.y)
