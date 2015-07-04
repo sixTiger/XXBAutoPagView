@@ -634,6 +634,7 @@
         }
     }
 }
+#pragma mark - 处理四个方向的手势
 - (void)leftSwip:(UISwipeGestureRecognizer *)leftSwip
 {
     [self nextPage];
